@@ -1,0 +1,232 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Nodo doble generico
+template <typename T>
+struct Nodo{
+    T dato;
+    Nodo<T>* siguiente;
+    Nodo<T>* anterior;
+};
+
+// Lista doblemente enlazada
+template <typename T>
+class ListaDoble{
+
+private:
+    Nodo<T>* primero;
+    Nodo<T>* ultimo;
+
+public:
+
+    ListaDoble(){
+        primero = NULL;
+        ultimo = NULL;
+    }
+
+    void insertarInicio(T valor){
+        Nodo<T>* nuevo = new Nodo<T>;
+        nuevo->dato = valor;
+        nuevo->siguiente = primero;
+        nuevo->anterior = NULL;
+
+        if(primero != NULL)
+            primero->anterior = nuevo;
+        else
+            ultimo = nuevo;
+
+        primero = nuevo;
+    }
+
+    void insertarFinal(T valor){
+        Nodo<T>* nuevo = new Nodo<T>;
+        nuevo->dato = valor;
+        nuevo->siguiente = NULL;
+        nuevo->anterior = ultimo;
+
+        if(ultimo != NULL)
+            ultimo->siguiente = nuevo;
+        else
+            primero = nuevo;
+
+        ultimo = nuevo;
+    }
+
+    void buscar(T valor){
+        Nodo<T>* temp = primero;
+
+        while(temp != NULL){
+            if(temp->dato == valor){
+                cout << "Elemento encontrado\n";
+                return;
+            }
+            temp = temp->siguiente;
+        }
+        cout << "Elemento no encontrado\n";
+    }
+
+    void eliminar(T valor){
+        Nodo<T>* temp = primero;
+
+        while(temp != NULL && temp->dato != valor){
+            temp = temp->siguiente;
+        }
+
+        if(temp == NULL){
+            cout << "Elemento no encontrado\n";
+            return;
+        }
+
+        if(temp == primero){
+            primero = temp->siguiente;
+            if(primero != NULL)
+                primero->anterior = NULL;
+            else
+                ultimo = NULL;
+        }
+        else if(temp == ultimo){
+            ultimo = temp->anterior;
+            ultimo->siguiente = NULL;
+        }
+        else{
+            temp->anterior->siguiente = temp->siguiente;
+            temp->siguiente->anterior = temp->anterior;
+        }
+
+        delete temp;
+        cout << "Elemento eliminado\n";
+    }
+
+    void mostrarInicioFin(){
+        Nodo<T>* temp = primero;
+        while(temp != NULL){
+            cout << temp->dato << " <-> ";
+            temp = temp->siguiente;
+        }
+        cout << "NULL\n";
+    }
+
+    void mostrarFinInicio(){
+        Nodo<T>* temp = ultimo;
+        while(temp != NULL){
+            cout << temp->dato << " <-> ";
+            temp = temp->anterior;
+        }
+        cout << "NULL\n";
+    }
+
+    void primeroElemento(){
+        if(primero != NULL)
+            cout << "Primer elemento: " << primero->dato << endl;
+        else
+            cout << "Lista vacia\n";
+    }
+
+    void ultimoElemento(){
+        if(ultimo != NULL)
+            cout << "Ultimo elemento: " << ultimo->dato << endl;
+        else
+            cout << "Lista vacia\n";
+    }
+};
+
+// ?? MENÚ GENÉRICO
+template <typename T>
+void menuLista(){
+
+    ListaDoble<T> lista;
+    int opcion;
+    T valor;
+
+    do{
+        cout << "\n--- LISTA DOBLEMENTE ENLAZADA ---\n";
+        cout << "1. Insertar al inicio\n";
+        cout << "2. Insertar al final\n";
+        cout << "3. Buscar elemento\n";
+        cout << "4. Eliminar elemento\n";
+        cout << "5. Mostrar inicio a fin\n";
+        cout << "6. Mostrar fin a inicio\n";
+        cout << "7. Consultar primero\n";
+        cout << "8. Consultar ultimo\n";
+        cout << "9. Salir\n";
+
+        cout << "Opcion: ";
+        cin >> opcion;
+
+        if(cin.fail()){
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Entrada invalida\n";
+            continue;
+        }
+
+        switch(opcion){
+
+        case 1:
+            cout << "Valor: ";
+            cin >> valor;
+            lista.insertarInicio(valor);
+            break;
+
+        case 2:
+            cout << "Valor: ";
+            cin >> valor;
+            lista.insertarFinal(valor);
+            break;
+
+        case 3:
+            cout << "Buscar valor: ";
+            cin >> valor;
+            lista.buscar(valor);
+            break;
+
+        case 4:
+            cout << "Eliminar valor: ";
+            cin >> valor;
+            lista.eliminar(valor);
+            break;
+
+        case 5:
+            lista.mostrarInicioFin();
+            break;
+
+        case 6:
+            lista.mostrarFinInicio();
+            break;
+
+        case 7:
+            lista.primeroElemento();
+            break;
+
+        case 8:
+            lista.ultimoElemento();
+            break;
+        }
+
+    }while(opcion != 9);
+}
+
+// ?? MAIN
+int main(){
+
+    int tipo;
+
+    cout << "--- SELECCION DE TIPO DE DATO ---\n";
+    cout << "1. Enteros\n";
+    cout << "2. Strings\n";
+    cout << "Opcion: ";
+    cin >> tipo;
+
+    if(tipo == 1){
+        menuLista<int>();
+    }
+    else if(tipo == 2){
+        menuLista<string>();
+    }
+    else{
+        cout << "Opcion invalida\n";
+    }
+
+    return 0;
+}

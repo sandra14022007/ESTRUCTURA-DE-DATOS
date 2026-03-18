@@ -146,17 +146,20 @@ int main(){
 
     do{
 
-        cout << "\n--- LISTA SIMPLE ---\n";
-        cout << "1. Insertar al inicio\n";
-        cout << "2. Insertar al final\n";
-        cout << "3. Buscar elemento\n";
-        cout << "4. Eliminar elemento\n";
-        cout << "5. Mostrar lista\n";
-        cout << "6. Consultar primero\n";
-        cout << "7. Consultar ultimo\n";
-        cout << "8. Salir\n";
+        cout << "\n====================\n";
+        cout << "\n    LISTA SIMPLE    \n";
+        cout << "\n====================\n";
+        cout << " 1. Insertar al inicio\n";
+        cout << " 2. Insertar al final\n";
+        cout << " 3. Buscar elemento\n";
+        cout << " 4. Eliminar elemento\n";
+        cout << " 5. Mostrar lista\n";
+        cout << " 6. Consultar primero\n";
+        cout << " 7. Consultar ultimo\n";
+        cout << " 8. Salir\n";
+        cout << "\n====================\n";
 
-        cout << "Opcion: ";
+        cout << " Opcion: ";
         cin >> opcion;
 
         switch(opcion){
