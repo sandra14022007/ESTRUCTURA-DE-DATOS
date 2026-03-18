@@ -133,7 +133,7 @@ void menuLista(){
         cout << "7. Consultar ultimo\n";
         cout << "8. Salir\n";
 
-        cout << "Opcion: ";
+        cout << " Opcion: ";
         cin >> opcion;
 
         if(cin.fail()){
