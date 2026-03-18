@@ -1,1 +1,205 @@
+#include <iostream>
+using namespace std;
+
+// Nodo generico
+template <typename T>
+struct Nodo{
+    T dato;
+    Nodo<T>* siguiente;
+};
+
+// Lista simplemente enlazada generica
+template <typename T>
+class ListaSimple{
+
+private:
+    Nodo<T>* cabeza;
+
+public:
+
+    ListaSimple(){
+        cabeza = NULL;
+    }
+
+    // Insertar al inicio
+    void insertarInicio(T valor){
+
+        Nodo<T>* nuevo = new Nodo<T>;
+        nuevo->dato = valor;
+        nuevo->siguiente = cabeza;
+
+        cabeza = nuevo;
+    }
+
+    // Insertar al final
+    void insertarFinal(T valor){
+
+        Nodo<T>* nuevo = new Nodo<T>;
+        nuevo->dato = valor;
+        nuevo->siguiente = NULL;
+
+        if(cabeza == NULL){
+            cabeza = nuevo;
+            return;
+        }
+
+        Nodo<T>* temp = cabeza;
+
+        while(temp->siguiente != NULL){
+            temp = temp->siguiente;
+        }
+
+        temp->siguiente = nuevo;
+    }
+
+    // Buscar elemento
+    void buscar(T valor){
+
+        Nodo<T>* temp = cabeza;
+
+        while(temp != NULL){
+
+            if(temp->dato == valor){
+                cout << "Elemento encontrado\n";
+                return;
+            }
+
+            temp = temp->siguiente;
+        }
+
+        cout << "Elemento no encontrado\n";
+    }
+
+    // Eliminar elemento
+    void eliminar(T valor){
+
+        Nodo<T>* temp = cabeza;
+        Nodo<T>* anterior = NULL;
+
+        while(temp != NULL && temp->dato != valor){
+            anterior = temp;
+            temp = temp->siguiente;
+        }
+
+        if(temp == NULL){
+            cout << "Elemento no encontrado\n";
+            return;
+        }
+
+        if(anterior == NULL){
+            cabeza = temp->siguiente;
+        }
+        else{
+            anterior->siguiente = temp->siguiente;
+        }
+
+        delete temp;
+
+        cout << "Elemento eliminado\n";
+    }
+
+    // Mostrar lista
+    void mostrar(){
+
+        Nodo<T>* temp = cabeza;
+
+        while(temp != NULL){
+            cout << temp->dato << " -> ";
+            temp = temp->siguiente;
+        }
+
+        cout << "NULL\n";
+    }
+
+    // Consultar primero
+    void primero(){
+
+        if(cabeza != NULL)
+            cout << "Primer elemento: " << cabeza->dato << endl;
+        else
+            cout << "Lista vacia\n";
+    }
+
+    // Consultar ultimo
+    void ultimo(){
+
+        if(cabeza == NULL){
+            cout << "Lista vacia\n";
+            return;
+        }
+
+        Nodo<T>* temp = cabeza;
+
+        while(temp->siguiente != NULL){
+            temp = temp->siguiente;
+        }
+
+        cout << "Ultimo elemento: " << temp->dato << endl;
+    }
+};
+
+int main(){
+
+    ListaSimple<int> lista;
+
+    int opcion, valor;
+
+    do{
+
+        cout << "\n--- LISTA SIMPLE ---\n";
+        cout << "1. Insertar al inicio\n";
+        cout << "2. Insertar al final\n";
+        cout << "3. Buscar elemento\n";
+        cout << "4. Eliminar elemento\n";
+        cout << "5. Mostrar lista\n";
+        cout << "6. Consultar primero\n";
+        cout << "7. Consultar ultimo\n";
+        cout << "8. Salir\n";
+
+        cout << "Opcion: ";
+        cin >> opcion;
+
+        switch(opcion){
+
+        case 1:
+            cout << "Valor: ";
+            cin >> valor;
+            lista.insertarInicio(valor);
+            break;
+
+        case 2:
+            cout << "Valor: ";
+            cin >> valor;
+            lista.insertarFinal(valor);
+            break;
+
+        case 3:
+            cout << "Buscar valor: ";
+            cin >> valor;
+            lista.buscar(valor);
+            break;
+
+        case 4:
+            cout << "Eliminar valor: ";
+            cin >> valor;
+            lista.eliminar(valor);
+            break;
+
+        case 5:
+            lista.mostrar();
+            break;
+
+        case 6:
+            lista.primero();
+            break;
+
+        case 7:
+            lista.ultimo();
+            break;
+        }
+
+    }while(opcion != 8);
+
+    return 0;
+}
 
