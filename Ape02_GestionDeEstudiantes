@@ -112,6 +112,7 @@ public:
              << fechaNacimiento << "\n";
     }
 };
+
 // ================================================================
 //  CLASE Curso: El gestor de la lista de estudiantes
 // ================================================================
@@ -192,67 +193,6 @@ public:
         return (total == 0) ? 0.0 : suma / total;
     }
 };
-
-// ================================================================
-//  UTILIDADES: Para que el ingreso de datos sea mas limpio
-// ================================================================
-
-void limpiarBuffer() {
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-}
-
-string leerLinea(const string& prompt) {
-    string s;
-    cout << prompt;
-    getline(cin, s);
-    return s;
-}
-
-int leerEntero(const string& prompt) {
-    int v;
-    while (true) {
-        cout << prompt;
-        if (cin >> v) { limpiarBuffer(); return v; }
-        cout << "  [!] Ingrese un numero entero valido.\n";
-        cin.clear(); limpiarBuffer();
-    }
-}
-
-double leerDouble(const string& prompt) {
-    double v;
-    while (true) {
-        cout << prompt;
-        if (cin >> v && v >= 0.0 && v <= 10.0) { limpiarBuffer(); return v; }
-        cout << "  [!] Ingrese un valor entre 0 y 10.\n";
-        cin.clear(); limpiarBuffer();
-    }
-}
-
-bool preguntarRepetir(const string& accion) {
-    while (true) {
-        string r = leerLinea("  Desea " + accion + " nuevamente? (s/n): ");
-        if (r == "s" || r == "S") return true;
-        if (r == "n" || r == "N") return false;
-        cout << "  [!] Responda s o n.\n";
-    }
-}
-
-// Validacion basica de formato dd/mm/aaaa
-bool validarFecha(const string& f) {
-    if ((int)f.size() != 10 || f[2] != '/' || f[5] != '/') return false;
-    int d = atoi(f.substr(0,2).c_str());
-    int m = atoi(f.substr(3,2).c_str());
-    int a = atoi(f.substr(6,4).c_str());
-    return (d >= 1 && d <= 31 && m >= 1 && m <= 12 && a >= 1900 && a <= 2100);
-}
-
-void linea(char c = '-', int n = 55) { cout << string(n, c) << "\n"; }
-
-void titulo(const string& t) {
-    linea('=');
-    cout << "  " << t << "\n";
-    linea('=');
-}
 
 // ================================================================
 //  UTILIDADES: Para que el ingreso de datos sea mas limpio
@@ -547,4 +487,115 @@ void gestionCalificaciones(Curso& curso) {
         } while (op != 0);
         return;
     }
+}
+
+// ================================================================
+//  OPCION 3: Promedio de un solo estudiante
+// ================================================================
+
+void promedioEstudiante(Curso& curso) {
+    titulo("PROMEDIO DE UN ESTUDIANTE");
+    if (!curso.hayEstudiantes()) {
+        cout << "  [!] No hay estudiantes registrados.\n";
+        return;
+    }
+    string ced = leerLinea("  Cedula del estudiante: ");
+    int idx = curso.buscar(ced);
+    if (idx < 0) {
+        cout << "  [!] No se encontro un estudiante con la cedula \""
+             << ced << "\".\n";
+        return;
+    }
+    Estudiante& e = curso.obtener(idx);
+    linea();
+    cout << "  Nombre   : " << e.getNombres() << " " << e.getApellidos() << "\n"
+         << "  Edad     : " << e.calcularEdad() << " anos\n";
+    if (e.getCantidadNotas() == 0) {
+        cout << "  Promedio : Sin calificaciones registradas\n";
+    } else {
+        cout << "  Notas    : ";
+        for (int i = 0; i < e.getCantidadNotas(); i++) {
+            if (i) cout << ", ";
+            cout << fixed << setprecision(2) << e.getNota(i);
+        }
+        cout << "\n  Promedio : " << fixed << setprecision(2)
+             << e.calcularPromedio() << "\n";
+    }
+    linea();
+}
+
+// ================================================================
+//  OPCION 4: Promedio de todo el salon de clases
+// ================================================================
+
+void promedioCurso(Curso& curso) {
+    titulo("PROMEDIO GENERAL DEL CURSO");
+    if (!curso.algunoTieneNotas()) {
+        cout << "  No se han registrado calificaciones de estudiantes.\n";
+    } else {
+        cout << "  Promedio general: " << fixed << setprecision(2)
+             << curso.promedioGeneral() << "\n";
+    }
+    linea();
+}
+
+// ================================================================
+//  MAIN: El punto de entrada del programa
+// ================================================================
+
+int main() {
+    Curso curso;
+
+    // Datos quemados para probar el programa rapido
+    curso.insertar(Estudiante("1804567890", "Camila Valentina",  "Torres Ramos",    "15/03/2001"));
+    curso.insertar(Estudiante("1756234801", "Sebastian Andres",  "Guzman Pena",      "22/07/1999"));
+    curso.insertar(Estudiante("1723489012", "Lucia Fernanda",    "Herrera Vasquez", "08/11/2002"));
+    curso.insertar(Estudiante("1801234567", "Mateo Alejandro",   "Rios Castillo",   "30/05/2000"));
+    curso.insertar(Estudiante("1890234501", "Valeria Estefania", "Mora Salinas",    "14/09/2003"));
+
+    // Cargamos unas notas base para las pruebas
+    curso.obtener(0).agregarNota(8.5);
+    curso.obtener(0).agregarNota(9.0);
+    curso.obtener(0).agregarNota(7.75);
+
+    curso.obtener(1).agregarNota(6.0);
+    curso.obtener(1).agregarNota(7.5);
+
+    curso.obtener(2).agregarNota(9.5);
+    curso.obtener(2).agregarNota(10.0);
+    curso.obtener(2).agregarNota(8.0);
+    curso.obtener(2).agregarNota(9.0);
+
+    curso.obtener(3).agregarNota(5.5);
+    curso.obtener(3).agregarNota(6.5);
+    curso.obtener(3).agregarNota(7.0);
+
+    // Valeria se queda sin notas para probar ese caso de error
+
+    // Ciclo principal del menu
+    int op;
+    do {
+        cout << "\n";
+        linea('=', 45);
+        cout << "        === GESTOR DE PERSONAS ===\n";
+        linea('=', 45);
+        cout << "  1. Estudiantes\n"
+             << "  2. Registro de calificaciones\n"
+             << "  3. Determinar el promedio de notas de un estudiante\n"
+             << "  4. Determinar el promedio de notas del curso\n"
+             << "  0. Salir\n";
+        linea('-', 45);
+        op = leerEntero("  Teclee su opcion (0-4): ");
+        cout << "\n";
+        switch (op) {
+            case 1: menuEstudiantes(curso);       break;
+            case 2: gestionCalificaciones(curso); break;
+            case 3: promedioEstudiante(curso);    break;
+            case 4: promedioCurso(curso);         break;
+            case 0: cout << "  Hasta luego.\n"; break;
+            default: cout << "  [!] Opcion invalida. Elija entre 0 y 4.\n";
+        }
+    } while (op != 0);
+
+    return 0;
 }
