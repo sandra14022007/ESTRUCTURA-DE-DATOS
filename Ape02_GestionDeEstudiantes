@@ -254,3 +254,297 @@ void titulo(const string& t) {
     linea('=');
 }
 
+// ================================================================
+//  UTILIDADES: Para que el ingreso de datos sea mas limpio
+// ================================================================
+
+void limpiarBuffer() {
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+string leerLinea(const string& prompt) {
+    string s;
+    cout << prompt;
+    getline(cin, s);
+    return s;
+}
+
+int leerEntero(const string& prompt) {
+    int v;
+    while (true) {
+        cout << prompt;
+        if (cin >> v) { limpiarBuffer(); return v; }
+        cout << "  [!] Ingrese un numero entero valido.\n";
+        cin.clear(); limpiarBuffer();
+    }
+}
+
+double leerDouble(const string& prompt) {
+    double v;
+    while (true) {
+        cout << prompt;
+        if (cin >> v && v >= 0.0 && v <= 10.0) { limpiarBuffer(); return v; }
+        cout << "  [!] Ingrese un valor entre 0 y 10.\n";
+        cin.clear(); limpiarBuffer();
+    }
+}
+
+bool preguntarRepetir(const string& accion) {
+    while (true) {
+        string r = leerLinea("  Desea " + accion + " nuevamente? (s/n): ");
+        if (r == "s" || r == "S") return true;
+        if (r == "n" || r == "N") return false;
+        cout << "  [!] Responda s o n.\n";
+    }
+}
+
+// Validacion basica de formato dd/mm/aaaa
+bool validarFecha(const string& f) {
+    if ((int)f.size() != 10 || f[2] != '/' || f[5] != '/') return false;
+    int d = atoi(f.substr(0,2).c_str());
+    int m = atoi(f.substr(3,2).c_str());
+    int a = atoi(f.substr(6,4).c_str());
+    return (d >= 1 && d <= 31 && m >= 1 && m <= 12 && a >= 1900 && a <= 2100);
+}
+
+void linea(char c = '-', int n = 55) { cout << string(n, c) << "\n"; }
+
+void titulo(const string& t) {
+    linea('=');
+    cout << "  " << t << "\n";
+    linea('=');
+}
+
+// ================================================================
+//  OPCION 1: Todo sobre agregar, editar y borrar alumnos
+// ================================================================
+
+void insertarEstudiante(Curso& curso) {
+    if (!curso.cupoDisponible()) {
+        cout << "\n  [!] El curso ya tiene " << MAX_ESTUDIANTES
+             << " estudiantes. No se pueden agregar mas.\n";
+        return;
+    }
+    do {
+        titulo("NUEVO ESTUDIANTE");
+        string cedula, nombres, apellidos, fecha;
+
+        while (true) {
+            cedula = leerLinea("    Cedula       : ");
+            if (cedula.empty()) { cout << "  [!] La cedula no puede estar vacia.\n"; continue; }
+            if (curso.buscar(cedula) >= 0) { cout << "  [!] Ya existe un estudiante con esa cedula.\n"; continue; }
+            break;
+        }
+        while (true) {
+            nombres = leerLinea("    Nombres      : ");
+            if (!nombres.empty()) break;
+            cout << "  [!] Los nombres no pueden estar vacios.\n";
+        }
+        while (true) {
+            apellidos = leerLinea("    Apellidos    : ");
+            if (!apellidos.empty()) break;
+            cout << "  [!] Los apellidos no pueden estar vacios.\n";
+        }
+        while (true) {
+            fecha = leerLinea("    Fecha nac.   (dd/mm/aaaa): ");
+            if (validarFecha(fecha)) break;
+            cout << "  [!] Fecha invalida. Use el formato dd/mm/aaaa.\n";
+        }
+
+        curso.insertar(Estudiante(cedula, nombres, apellidos, fecha));
+        cout << "  [OK] Estudiante registrado.\n";
+
+        if (!curso.cupoDisponible()) {
+            cout << "  [!] Se alcanzo el cupo maximo del curso.\n";
+            break;
+        }
+    } while (preguntarRepetir("registrar otro estudiante"));
+}
+
+void modificarEstudiante(Curso& curso) {
+    if (!curso.hayEstudiantes()) {
+        cout << "\n  [!] No hay estudiantes para modificar.\n";
+        return;
+    }
+    do {
+        curso.mostrarListado();
+        int num = leerEntero("  Autonumerico a modificar (0=cancelar): ");
+        if (num == 0) break;
+        if (num < 1 || num > curso.getCantidad()) {
+            cout << "  [!] Numero fuera de rango.\n"; continue;
+        }
+        Estudiante& e = curso.obtener(num - 1);
+        titulo("MODIFICAR ESTUDIANTE");
+        cout << "  (Presione ENTER para conservar el valor actual)\n\n";
+
+        while (true) {
+            string v = leerLinea("    Cedula [" + e.getCedula() + "]: ");
+            if (v.empty()) break;
+            int idx = curso.buscar(v);
+            if (idx >= 0 && idx != num - 1) {
+                cout << "  [!] Esa cedula ya pertenece a otro estudiante.\n"; continue;
+            }
+            e.setCedula(v); break;
+        }
+        string v;
+        v = leerLinea("    Nombres [" + e.getNombres() + "]: ");
+        if (!v.empty()) e.setNombres(v);
+
+        v = leerLinea("    Apellidos [" + e.getApellidos() + "]: ");
+        if (!v.empty()) e.setApellidos(v);
+
+        while (true) {
+            v = leerLinea("    Fecha nac. [" + e.getFechaNacimiento() + "]: ");
+            if (v.empty()) break;
+            if (validarFecha(v)) { e.setFechaNacimiento(v); break; }
+            cout << "  [!] Fecha invalida. Use dd/mm/aaaa.\n";
+        }
+        cout << "  [OK] Datos actualizados.\n";
+    } while (preguntarRepetir("modificar otro estudiante"));
+}
+
+void eliminarEstudiante(Curso& curso) {
+    if (!curso.hayEstudiantes()) {
+        cout << "\n  [!] No hay estudiantes para eliminar.\n";
+        return;
+    }
+    do {
+        curso.mostrarListado();
+        int num = leerEntero("  Autonumerico a eliminar (0=cancelar): ");
+        if (num == 0) break;
+        if (num < 1 || num > curso.getCantidad()) {
+            cout << "  [!] Numero fuera de rango.\n"; continue;
+        }
+        Estudiante& e = curso.obtener(num - 1);
+        string conf = leerLinea("  Confirma eliminar a " +
+                                e.getNombres() + " " + e.getApellidos() + "? (s/n): ");
+        if (conf == "s" || conf == "S") {
+            curso.eliminar(num - 1);
+            cout << "  [OK] Estudiante eliminado.\n";
+        } else {
+            cout << "  Operacion cancelada.\n";
+        }
+        if (!curso.hayEstudiantes()) break;
+    } while (preguntarRepetir("eliminar otro estudiante"));
+}
+
+// Menu secundario de la opcion 1
+void menuEstudiantes(Curso& curso) {
+    int op;
+    do {
+        titulo("GESTION DE ESTUDIANTES");
+        curso.mostrarListado();
+        cout << "\n"
+             << "  1. Insertar estudiante\n"
+             << "  2. Modificar estudiante\n"
+             << "  3. Eliminar estudiante\n"
+             << "  0. Volver al menu principal\n";
+        op = leerEntero("  Opcion: ");
+        switch (op) {
+            case 1: insertarEstudiante(curso); break;
+            case 2: modificarEstudiante(curso); break;
+            case 3: eliminarEstudiante(curso);  break;
+            case 0: break;
+            default: cout << "  [!] Opcion invalida.\n";
+        }
+    } while (op != 0);
+}
+
+// ================================================================
+//  OPCION 2: Donde se cargan y editan las notas
+// ================================================================
+
+void mostrarNotasEstudiante(const Estudiante& e) {
+    cout << "\n  Calificaciones de " << e.getNombres()
+         << " " << e.getApellidos() << ":\n";
+    if (e.getCantidadNotas() == 0) {
+        cout << "    (Sin calificaciones)\n";
+    } else {
+        for (int i = 0; i < e.getCantidadNotas(); i++)
+            cout << "    " << (i + 1) << ". "
+                 << fixed << setprecision(2) << e.getNota(i) << "\n";
+    }
+    cout << "  (" << e.getCantidadNotas() << "/" << MAX_NOTAS
+         << " notas registradas)\n";
+}
+
+void gestionCalificaciones(Curso& curso) {
+    titulo("REGISTRO DE CALIFICACIONES");
+    if (!curso.hayEstudiantes()) {
+        cout << "  [!] No hay estudiantes registrados.\n";
+        return;
+    }
+    while (true) {
+        string ced = leerLinea("  Cedula del estudiante (0=volver): ");
+        if (ced == "0") return;
+
+        int idx = curso.buscar(ced);
+        if (idx < 0) {
+            cout << "  [!] No se encontro un estudiante con esa cedula.\n";
+            string r = leerLinea("  Ingresar otra cedula? (s/n): ");
+            if (r != "s" && r != "S") return;
+            continue;
+        }
+
+        Estudiante& e = curso.obtener(idx);
+        cout << "\n  Estudiante : " << e.getNombres() << " " << e.getApellidos()
+             << "  |  Edad: " << e.calcularEdad() << " anos\n";
+
+        int op;
+        do {
+            mostrarNotasEstudiante(e);
+            cout << "\n"
+                 << "  1. Insertar nota\n"
+                 << "  2. Modificar nota\n"
+                 << "  3. Eliminar nota\n"
+                 << "  0. Volver\n";
+            op = leerEntero("  Opcion: ");
+
+            if (op == 1) {
+                if (e.getCantidadNotas() >= MAX_NOTAS) {
+                    cout << "  [!] Se han ingresado todas las calificaciones posibles ("
+                         << MAX_NOTAS << "). Proceso terminado.\n";
+                    op = 0; break;
+                }
+                do {
+                    double n = leerDouble("    Nueva nota (0-10): ");
+                    e.agregarNota(n);
+                    cout << "  [OK] Nota agregada.\n";
+                    if (e.getCantidadNotas() >= MAX_NOTAS) {
+                        cout << "  [!] Se alcanzo el maximo de " << MAX_NOTAS << " notas.\n";
+                        break;
+                    }
+                } while (preguntarRepetir("insertar otra nota"));
+
+            } else if (op == 2) {
+                if (e.getCantidadNotas() == 0) {
+                    cout << "  [!] No hay notas para modificar.\n";
+                } else {
+                    int num = leerEntero("    Numero de nota a modificar: ");
+                    if (num < 1 || num > e.getCantidadNotas())
+                        cout << "  [!] Numero fuera de rango.\n";
+                    else {
+                        double n = leerDouble("    Nueva nota (0-10): ");
+                        e.modificarNota(num - 1, n);
+                        cout << "  [OK] Nota actualizada.\n";
+                    }
+                }
+            } else if (op == 3) {
+                if (e.getCantidadNotas() == 0) {
+                    cout << "  [!] No hay notas para eliminar.\n";
+                } else {
+                    int num = leerEntero("    Numero de nota a eliminar: ");
+                    if (num < 1 || num > e.getCantidadNotas())
+                        cout << "  [!] Numero fuera de rango.\n";
+                    else {
+                        e.eliminarNota(num - 1);
+                        cout << "  [OK] Nota eliminada.\n";
+                    }
+                }
+            } else if (op != 0) {
+                cout << "  [!] Opcion invalida.\n";
+            }
+        } while (op != 0);
+        return;
+    }
+}
