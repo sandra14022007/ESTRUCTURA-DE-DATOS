@@ -112,4 +112,145 @@ public:
              << fechaNacimiento << "\n";
     }
 };
+// ================================================================
+//  CLASE Curso: El gestor de la lista de estudiantes
+// ================================================================
+class Curso {
+private:
+    Estudiante estudiantes[MAX_ESTUDIANTES];
+    int        cantidad;
+
+public:
+    Curso() : cantidad(0) {}
+
+    int  getCantidad()    const { return cantidad; }
+    bool cupoDisponible() const { return cantidad < MAX_ESTUDIANTES; }
+    bool hayEstudiantes() const { return cantidad > 0; }
+
+    // Buscamos por cedula para saber en que posicion esta el alumno
+    int buscar(const string& cedula) const {
+        for (int i = 0; i < cantidad; i++)
+            if (estudiantes[i].getCedula() == cedula) return i;
+        return -1;
+    }
+
+    // Devuelve el objeto estudiante para poder usar sus metodos
+    Estudiante& obtener(int idx) { return estudiantes[idx]; }
+
+    // Funciones principales para el manejo de la lista
+    bool insertar(const Estudiante& e) {
+        if (!cupoDisponible()) return false;
+        estudiantes[cantidad++] = e;
+        return true;
+    }
+
+    bool eliminar(int idx) {
+        if (idx < 0 || idx >= cantidad) return false;
+        for (int i = idx; i < cantidad - 1; i++)
+            estudiantes[i] = estudiantes[i + 1];
+        cantidad--;
+        return true;
+    }
+
+    // Imprime toda la lista de alumnos registrados
+    void mostrarListado() const {
+        cout << "\n"
+             << setw(4) << "N." << "  "
+             << left
+             << setw(13) << "CEDULA"    << " | "
+             << setw(20) << "NOMBRES"   << " | "
+             << setw(20) << "APELLIDOS" << " | "
+             << "FECHA NAC.\n";
+        cout << string(80, '-') << "\n";
+        if (cantidad == 0) {
+            cout << "  (Sin estudiantes registrados)\n";
+        } else {
+            for (int i = 0; i < cantidad; i++)
+                estudiantes[i].mostrarFila(i + 1);
+        }
+        cout << string(80, '-') << "\n";
+        cout << "  Registrados: " << cantidad << " / " << MAX_ESTUDIANTES << "\n";
+    }
+
+    // Revisa si al menos un alumno tiene una nota cargada
+    bool algunoTieneNotas() const {
+        for (int i = 0; i < cantidad; i++)
+            if (estudiantes[i].getCantidadNotas() > 0) return true;
+        return false;
+    }
+
+    // Saca el promedio de todas las notas de todos los alumnos
+    double promedioGeneral() const {
+        double suma = 0.0;
+        int    total = 0;
+        for (int i = 0; i < cantidad; i++) {
+            for (int j = 0; j < estudiantes[i].getCantidadNotas(); j++) {
+                suma += estudiantes[i].getNota(j);
+                total++;
+            }
+        }
+        return (total == 0) ? 0.0 : suma / total;
+    }
+};
+
+// ================================================================
+//  UTILIDADES: Para que el ingreso de datos sea mas limpio
+// ================================================================
+
+void limpiarBuffer() {
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+string leerLinea(const string& prompt) {
+    string s;
+    cout << prompt;
+    getline(cin, s);
+    return s;
+}
+
+int leerEntero(const string& prompt) {
+    int v;
+    while (true) {
+        cout << prompt;
+        if (cin >> v) { limpiarBuffer(); return v; }
+        cout << "  [!] Ingrese un numero entero valido.\n";
+        cin.clear(); limpiarBuffer();
+    }
+}
+
+double leerDouble(const string& prompt) {
+    double v;
+    while (true) {
+        cout << prompt;
+        if (cin >> v && v >= 0.0 && v <= 10.0) { limpiarBuffer(); return v; }
+        cout << "  [!] Ingrese un valor entre 0 y 10.\n";
+        cin.clear(); limpiarBuffer();
+    }
+}
+
+bool preguntarRepetir(const string& accion) {
+    while (true) {
+        string r = leerLinea("  Desea " + accion + " nuevamente? (s/n): ");
+        if (r == "s" || r == "S") return true;
+        if (r == "n" || r == "N") return false;
+        cout << "  [!] Responda s o n.\n";
+    }
+}
+
+// Validacion basica de formato dd/mm/aaaa
+bool validarFecha(const string& f) {
+    if ((int)f.size() != 10 || f[2] != '/' || f[5] != '/') return false;
+    int d = atoi(f.substr(0,2).c_str());
+    int m = atoi(f.substr(3,2).c_str());
+    int a = atoi(f.substr(6,4).c_str());
+    return (d >= 1 && d <= 31 && m >= 1 && m <= 12 && a >= 1900 && a <= 2100);
+}
+
+void linea(char c = '-', int n = 55) { cout << string(n, c) << "\n"; }
+
+void titulo(const string& t) {
+    linea('=');
+    cout << "  " << t << "\n";
+    linea('=');
+}
 
