@@ -1,1 +1,115 @@
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <ctime>
+#include <limits>
+#include <cstdlib>
+using namespace std;
+
+// Ponemos limites fijos para no complicarnos con memoria dinamica
+const int MAX_ESTUDIANTES = 20;
+const int MAX_NOTAS       = 7;
+
+// ================================================================
+//  CLASE Estudiante: El molde para cada alumno
+// ================================================================
+class Estudiante {
+private:
+    // Datos privados para que no se modifiquen por fuera de la clase
+    string cedula;
+    string nombres;
+    string apellidos;
+    string fechaNacimiento;   // formato: dd/mm/aaaa
+    double notas[MAX_NOTAS];
+    int    cantidadNotas;
+
+public:
+    // Constructor por defecto: inicializa todo en vacio o cero
+    Estudiante() : cedula(""), nombres(""), apellidos(""),
+                    fechaNacimiento(""), cantidadNotas(0) {
+        for (int i = 0; i < MAX_NOTAS; i++) notas[i] = 0.0;
+    }
+
+    // Constructor con parametros: para meter los datos de una
+    Estudiante(const string& ced, const string& nom,
+               const string& ape, const string& fec)
+        : cedula(ced), nombres(nom), apellidos(ape),
+          fechaNacimiento(fec), cantidadNotas(0) {
+        for (int i = 0; i < MAX_NOTAS; i++) notas[i] = 0.0;
+    }
+
+    // Getters: funciones para poder leer los datos privados
+    string getCedula()          const { return cedula; }
+    string getNombres()         const { return nombres; }
+    string getApellidos()       const { return apellidos; }
+    string getFechaNacimiento() const { return fechaNacimiento; }
+    int    getCantidadNotas()   const { return cantidadNotas; }
+    double getNota(int i)       const { return notas[i]; }
+
+    // Setters: para actualizar la info si hay algun error
+    void setCedula(const string& v)          { cedula = v; }
+    void setNombres(const string& v)         { nombres = v; }
+    void setApellidos(const string& v)       { apellidos = v; }
+    void setFechaNacimiento(const string& v) { fechaNacimiento = v; }
+
+    // Metemos una nota nueva al arreglo si aun hay espacio
+    bool agregarNota(double n) {
+        if (cantidadNotas >= MAX_NOTAS) return false;
+        notas[cantidadNotas++] = n;
+        return true;
+    }
+
+    // Cambiamos una nota que ya existe buscando su posicion
+    bool modificarNota(int idx, double n) {
+        if (idx < 0 || idx >= cantidadNotas) return false;
+        notas[idx] = n;
+        return true;
+    }
+
+    // Borramos una nota y recorremos las demas para no dejar huecos
+    bool eliminarNota(int idx) {
+        if (idx < 0 || idx >= cantidadNotas) return false;
+        for (int i = idx; i < cantidadNotas - 1; i++)
+            notas[i] = notas[i + 1];
+        notas[--cantidadNotas] = 0.0;
+        return true;
+    }
+
+    // Sacamos el promedio: sumamos todo y dividimos para el total de notas
+    double calcularPromedio() const {
+        if (cantidadNotas == 0) return 0.0;
+        double s = 0.0;
+        for (int i = 0; i < cantidadNotas; i++) s += notas[i];
+        return s / cantidadNotas;
+    }
+
+    // Calculamos la edad usando la fecha del sistema (ctime)
+    int calcularEdad() const {
+        if (fechaNacimiento.size() < 10) return -1;
+        // Cortamos el string dd/mm/aaaa para pasarlo a enteros
+        int dia  = atoi(fechaNacimiento.substr(0, 2).c_str());
+        int mes  = atoi(fechaNacimiento.substr(3, 2).c_str());
+        int anio = atoi(fechaNacimiento.substr(6, 4).c_str());
+
+        time_t t = time(NULL);
+        struct tm* hoy = localtime(&t);
+
+        int edad = (hoy->tm_year + 1900) - anio;
+        // Si no ha llegado su mes o dia de cumple, restamos un anio
+        if ((hoy->tm_mon + 1) < mes ||
+           ((hoy->tm_mon + 1) == mes && hoy->tm_mday < dia))
+            edad--;
+        return edad;
+    }
+
+    // Muestra una linea de la tabla con formato alineado
+    void mostrarFila(int autonumerico) const {
+        cout << setw(3) << autonumerico << ". "
+             << left
+             << setw(13) << cedula    << " | "
+             << setw(20) << nombres   << " | "
+             << setw(20) << apellidos << " | "
+             << fechaNacimiento << "\n";
+    }
+};
 
